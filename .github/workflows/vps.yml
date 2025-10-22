@@ -93,11 +93,7 @@ jobs:
       - name: Keep VM running 💤
         run: sleep 14400
 
-      - name: Gracefully shutdown VM ⚙️
-        run: |
-          set +e
-          pkill qemu
-          
+      
 
       - name: Compress and split image 📦
         run: |
