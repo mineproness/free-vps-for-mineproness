@@ -15,7 +15,7 @@ jobs:
       - name: Install QEMU, socat, and Tailscale ✅
         run: |
           set +e
-          sudo apt install -y qemu-system qemu-utils socat curl wget zip xz-utils
+          sudo apt install -y qemu-system qemu-utils socat cloud-image-utils curl wget zip xz-utils
           curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
           curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/noble.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
           sudo apt update
@@ -42,7 +42,7 @@ jobs:
         run: |
           cd
           echo "Checking for saved parts on WebDAV..."
-          PARTS=$(curl -s -u admin:admin $URL/webdav/ | grep -o 'alpine_part_[a-z][a-z]' | sort | uniq)
+          PARTS=$(curl -s -u admin:admin $URL/webdav/ | grep -o 'ubuntu_part_[a-z][a-z]' | sort | uniq)
 
           if [ -z "$PARTS" ]; then
             echo "⚠️ No saved parts found — fresh VM will be created."
@@ -53,20 +53,28 @@ jobs:
               curl -u admin:admin -O "$URL/webdav/$p"
             done
             echo "Rebuilding alpine.img..."
-            cat alpine_part_* > alpine.img.xz
-            rm -rf alpine_part_*
-            xz -d alpine.img.xz
-            rm -rf alpine.img.xz
+            cat ubuntu_part_* > ubuntu.img.xz
+            rm -rf ubuntu_part_*
+            xz -d ubuntu.img.xz
+            rm -rf ubuntu.img.xz
           fi
       - name: Show Disk space 💿
         run : df -h /
       - name: Prepare base image if needed 🧱
         run: |
           cd
-          if [ ! -f "alpine.img" ]; then
-            echo "Creating new 20GB Alpine image..."
-            qemu-img create -f raw alpine.img 25G
-            wget -O alpine.iso https://dl-cdn.alpinelinux.org/alpine/v3.22/releases/x86_64/alpine-standard-3.22.2-x86_64.iso
+          if [ ! -f "ubuntu.img" ]; then
+            echo "Creating new 25GB ubuntu image..."
+            wget -O ubuntu-disk.img https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
+            qemu-img resize ubuntu-disk.img 25G
+            cat >> "user-data" << EOF
+            #cloud-config
+            users: 
+              - name: root
+                password: $5$iMP53N4trPTktCX1$Kx4UdD/4EVt5J.LszIzbWNDXcxcD2DKOXXU3Xz25g/D
+                lock_passwd: false
+             EOF
+            cloud-localds seed.iso user-data
             touch cdrom
           fi
 
@@ -76,12 +84,12 @@ jobs:
           if [ -f "cdrom" ]; then
             sudo qemu-system-x86_64  \
               -enable-kvm -cpu host -m 8G \
-              -drive file=alpine.img,format=raw,if=virtio \
-              -cdrom alpine.iso -vnc :2 -net nic -net user &
+              -drive file=ubuntu.img,format=raw,if=virtio \
+              -cdrom seed.iso -vnc :2 -net nic -net user &
           else
             sudo qemu-system-x86_64  \
               -enable-kvm -cpu host -m 8G \
-              -drive file=alpine.img,format=raw,if=virtio \
+              -drive file=ubuntu.img,format=raw,if=virtio \
               -vnc :2 -net nic -net user &
           fi
 
@@ -91,7 +99,7 @@ jobs:
         run: sudo tailscale up --authkey $TS_AUTHKEY --accept-routes
 
       - name: Keep VM running 💤
-        run: sleep 14400
+        run: sleep 60
 
       
 
