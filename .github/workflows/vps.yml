@@ -52,7 +52,7 @@ jobs:
               echo "Downloading $p ..."
               curl -u admin:admin -O "$URL/webdav/$p"
             done
-            echo "Rebuilding alpine.img..."
+            echo "Rebuilding ubuntu.img..."
             cat ubuntu_part_* > ubuntu.img.xz
             rm -rf ubuntu_part_*
             xz -d ubuntu.img.xz
@@ -65,8 +65,8 @@ jobs:
           cd
           if [ ! -f "ubuntu.img" ]; then
             echo "Creating new 25GB ubuntu image..."
-            wget -O ubuntu-disk.img https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
-            qemu-img resize ubuntu-disk.img 25G
+            wget -O ubuntu.img https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
+            qemu-img resize ubuntu.img 25G
             cat >> "user-data" << EOF
             #cloud-config
             users: 
