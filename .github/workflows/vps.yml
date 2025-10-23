@@ -22,20 +22,7 @@ jobs:
           sudo apt install -y tailscale
         
           sudo tailscaled &
-      - name: Free Disk Space (Quick)
-        run: |
-          sudo bash -c '
-          rm -rf /opt/*
-          for d in /usr/local/lib/android /usr/share/dotnet /opt/ghc \
-            /usr/local/share/chromium /usr/local/share/firefox /usr/local/share/edge; do
-            
-            rm -rf $d
-          done
-
-          # Clean smaller caches normally
-           rm -rf /opt/hostedtoolcache/* /tmp/* /var/tmp/*
-           apt-get clean -y
-           '
+      
       - name: Download existing image or parts ⬇️
         env: 
           URL: ${{ secrets.URL }}
@@ -73,8 +60,11 @@ jobs:
               - name: root
                 password: $5$iMP53N4trPTktCX1$Kx4UdD/4EVt5J.LszIzbWNDXcxcD2DKOXXU3Xz25g/D
                 lock_passwd: false
-             EOF
-            cloud-localds seed.iso user-data
+            EOF
+            cat >> "meta-data" << EOF
+            local-hostname: ubuntu
+            EOF
+            cloud-localds seed.iso user-data meta-data
             touch cdrom
           fi
 
