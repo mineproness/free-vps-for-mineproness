@@ -55,14 +55,14 @@ jobs:
             wget -O ubuntu.img https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64-disk-kvm.img
             qemu-img resize ubuntu.img 25G
             cat >> "user-data" << EOF
-            #cloud-config
-            users: 
-              - name: root
-                password: $5$iMP53N4trPTktCX1$Kx4UdD/4EVt5J.LszIzbWNDXcxcD2DKOXXU3Xz25g/D
-                lock_passwd: false
+             #cloud-config
+             users: 
+               - name: root
+                 password: $5$iMP53N4trPTktCX1$Kx4UdD/4EVt5J.LszIzbWNDXcxcD2DKOXXU3Xz25g/D
+                 lock_passwd: false
             EOF
             cat >> "meta-data" << EOF
-            local-hostname: ubuntu
+             local-hostname: ubuntu
             EOF
             cloud-localds seed.iso user-data meta-data
             touch cdrom
