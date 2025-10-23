@@ -91,13 +91,14 @@ jobs:
         run: sudo tailscale up --authkey $TS_AUTHKEY --accept-routes
 
       - name: Keep VM running 💤
-        run: sleep 14400
+        run: sleep 300
 
       - name: Gracefully shutdown VM ⚙️
         run: |
           set +e
+          sudo bash -c '
           sudo socat - UNIX-CONNECT:/tmp/qemu-monitor.sock <<< "system_powerdown"
-          
+          '
 
       - name: Compress and split image 📦
         run: |
