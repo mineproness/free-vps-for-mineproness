@@ -91,7 +91,7 @@ jobs:
         run: sudo tailscale up --authkey $TS_AUTHKEY --accept-routes
 
       - name: Keep VM running 💤
-        run: sleep 300
+        run: sleep 14400
 
       - name: Gracefully shutdown VM ⚙️
         run: |
