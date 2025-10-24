@@ -104,7 +104,7 @@ jobs:
         run: |
           cd
           echo "Compressing alpine.img..."
-          zip alpine.img -O alpine.zip
+          zip alpine.zip alpine.img
           rm -rf alpine.img
           echo "Splitting into 1GB parts..."
           split -b 1024M alpine.zip alpine_part_
